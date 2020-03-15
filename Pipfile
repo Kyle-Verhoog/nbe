@@ -9,8 +9,10 @@ black = "*"
 
 [packages]
 beautifulsoup4 = "*"
-urllib2 = "*"
 requests = "*"
 
 [requires]
 python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true
