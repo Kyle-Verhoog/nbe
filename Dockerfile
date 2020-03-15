@@ -11,5 +11,4 @@ RUN pipenv install --system
 
 COPY nbe-cron /etc/cron.d/nbe-cron
 RUN chmod 0644 /etc/cron.d/nbe-cron
-RUN printenv >> /etc/environment
 CMD ["./entrypoint.sh"]
