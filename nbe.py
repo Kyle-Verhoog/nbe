@@ -104,10 +104,8 @@ def update_recipients():
                     cur.execute("delete from users where email=?", [from_addr])
                     addrs.remove(from_addr)
                 elif "subscribe" in mail_subject and from_addr not in addrs:
-                    # default send time is at 7:30am
                     cur.execute("insert into users(email) values(?)", [from_addr])
                     addrs.add(from_addr)
-                # elif from_addr in addrs and "sendat" in mail_subject:
 
     conn.commit()
     return addrs

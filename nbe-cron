@@ -1,3 +1,4 @@
 #m h d m y
 # redirect program output to docker stdout and stderr
-0 * * * * python3 /code/nbe.py > /proc/1/fd/1 2>/proc/1/fd/2
+# run at 7:30am EST
+30 7 * * * root python3 /code/nbe.py > /proc/1/fd/1 2>/proc/1/fd/2
