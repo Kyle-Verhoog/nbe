@@ -12,9 +12,11 @@ import requests
 
 conn = sqlite3.connect("db.sqlite3")
 cur = conn.cursor()
-cur.execute("""
+cur.execute(
+    """
 create table if not exists users (email text);
-""")
+"""
+)
 
 
 class RequiredEnv:
@@ -37,8 +39,16 @@ class RequiredEnv:
     def __exit__(self, type, value, traceback):
         if self.missing_required_keys:
             import sys
+
             sys.tracebacklimit = 0
-            raise Exception("\n".join([f"'{self.getkey(key)}' required setting not provided" for key in self.missing_required_keys]))
+            raise Exception(
+                "\n".join(
+                    [
+                        f"'{self.getkey(key)}' required setting not provided"
+                        for key in self.missing_required_keys
+                    ]
+                )
+            )
 
 
 with RequiredEnv(prefix="SMTP_") as settings:
@@ -62,11 +72,12 @@ def render_verses(verses):
     </div>
     """
 
+
 def update_recipients():
     addrs = set()
     cur.execute("select * from users")
     for row in cur.fetchall():
-        addr, = row
+        (addr,) = row
         addrs.add(addr)
 
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
@@ -85,16 +96,19 @@ def update_recipients():
             if isinstance(response_part, tuple):
                 message = email.message_from_bytes(response_part[1])
 
-                mail_from = message['from']
+                mail_from = message["from"]
                 from_addr = mail_from.split("<")[-1].split(">")[0]
-                mail_subject = message['subject']
+                mail_subject = message["subject"]
 
                 if "stop" in mail_subject and from_addr in addrs:
                     cur.execute("delete from users where email=?", [from_addr])
                     addrs.remove(from_addr)
                 elif "subscribe" in mail_subject and from_addr not in addrs:
+                    # default send time is at 7:30am
                     cur.execute("insert into users(email) values(?)", [from_addr])
                     addrs.add(from_addr)
+                # elif from_addr in addrs and "sendat" in mail_subject:
+
     conn.commit()
     return addrs
 
@@ -111,16 +125,17 @@ def get_email():
     s = bs(article_page, "html.parser")
     content = s.find("div", attrs={"class": "entry-content"})
 
-    bible_urls = content.find_all(
-        "a", attrs={"href": re.compile("biblegateway.com"),}
-    )
+    bible_urls = content.find_all("a", attrs={"href": re.compile("biblegateway.com"),})
 
     # Convert the Norm-written verse to something the bible-api can read.
     def parse_verse(raw):
         # TODO
         return raw
 
-    verses = [requests.get(f"https://bible-api.com/{parse_verse(a.text)}").json() for a in bible_urls]
+    verses = [
+        requests.get(f"https://bible-api.com/{parse_verse(a.text)}").json()
+        for a in bible_urls
+    ]
 
     subject = a_article.text
     email_body = f"""
@@ -143,7 +158,9 @@ def send_email(subject, body, to_addrs):
         server.login(SMTP_USER, SMTP_PASS)
         mail = email.message.EmailMessage()
         mail["Subject"] = subject
-        mail["From"] = email.headerregistry.Address("Norm's Blog", SMTP_USER.split("@")[0], SMTP_USER.split("@")[1])
+        mail["From"] = email.headerregistry.Address(
+            "Pastor Norm", SMTP_USER.split("@")[0], SMTP_USER.split("@")[1]
+        )
         mail["To"] = SMTP_USER
         mail.set_content(body, subtype="html")
         server.send_message(mail, to_addrs=to_addrs)
@@ -159,7 +176,4 @@ def update_and_send():
 
 
 if __name__ == "__main__":
-    # runserver()
     update_and_send()
-    #while True:
-    #    time.sleep(60*5)
