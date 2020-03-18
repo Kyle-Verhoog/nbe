@@ -98,7 +98,8 @@ def update_recipients():
 
                 mail_from = message["from"]
                 from_addr = mail_from.split("<")[-1].split(">")[0]
-                mail_subject = message["subject"]
+                mail_subject = message["subject"] or ""
+                mail_subject = mail_subject.lower()
 
                 if "stop" in mail_subject and from_addr in addrs:
                     cur.execute("delete from users where email=?", [from_addr])
@@ -141,7 +142,7 @@ def get_email():
     {str(content)}
     {"".join([render_verses(v) for v in verses])}
     <div>
-        &nbsp;&nbsp;
+        <br><br>
         See the full post <a href="{article_url}">here</a> | Reply with the subject 'stop' to this email to unsubscribe from the list.
     </div>
     </div>
