@@ -113,7 +113,7 @@ def update_recipients():
 
 
 def get_email():
-    page = urlopen("https://normansennema.com/archives/category/meditations")
+    page = urlopen("https://jesusfollower.ca/archives/category/meditations")
     s = bs(page, "html.parser")
 
     # Find the first article
